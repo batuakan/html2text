@@ -70,6 +70,7 @@ class HTML2Text(html.parser.HTMLParser):
         self.ignore_emphasis = config.IGNORE_EMPHASIS  # covered in cli
         self.bypass_tables = config.BYPASS_TABLES  # covered in cli
         self.ignore_tables = config.IGNORE_TABLES  # covered in cli
+        self.list_tables = True
         self.google_doc = False  # covered in cli
         self.ul_item_mark = "*"  # covered in cli
         self.emphasis_mark = "_"  # covered in cli
@@ -678,7 +679,22 @@ class HTML2Text(html.parser.HTMLParser):
                         self.o("<{}>".format(tag))
                     else:
                         self.o("</{}>".format(tag))
-
+            elif self.list_tables:
+                if tag == "table":
+                    if start:
+                        self.o("\n```{list-table}\n")
+                    else:
+                        self.o("\n```\n")
+                if tag in ["td", "th"] and start:
+                    self.o("\n   - ")
+                    # if self.split_next_td:
+                    #     self.o("| ")
+                    # self.split_next_td = True
+                if tag == "tr" and start:
+                    self.o("\n-\n")
+                    self.td_count = 0
+                if tag in ["td", "th"] and start:
+                    self.td_count += 1
             else:
                 if tag == "table":
                     if start:
